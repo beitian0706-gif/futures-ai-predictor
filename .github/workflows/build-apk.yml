@@ -11,7 +11,10 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
+      -name: Install Android SDK components
+  run: |
+    yes | sdkmanager --licenses || true
+    sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
       - name: Unzip source
         run: |
           unzip -o futures_ai_android_v0.4_source.zip -d source
