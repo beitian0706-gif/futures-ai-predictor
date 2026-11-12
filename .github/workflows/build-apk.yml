@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - main
+      - v0.4.1
 
 jobs:
   build:
@@ -34,6 +35,13 @@ jobs:
           unzip -o futures_ai_android_v0.4_source.zip -d source
           find source -name settings.gradle -o -name settings.gradle.kts
 
+      - name: Apply V0.4.1 connection fixes
+        run: |
+          PROJECT=$(find source -name settings.gradle | head -1)
+          test -n "$PROJECT"
+          cp v0.4.1/apply_patch.py "$(dirname "$PROJECT")/apply_patch.py"
+          python "$(dirname "$PROJECT")/apply_patch.py"
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -49,6 +57,6 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: futures-ai-apk
+          name: futures-ai-v0.4.1-apk
           path: source/**/build/outputs/apk/debug/*.apk
           if-no-files-found: error
