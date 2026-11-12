@@ -27,7 +27,7 @@ jobs:
         run: |
           unzip -o futures_ai_android_v0.4_source.zip -d source
           find source -name settings.gradle -o -name settings.gradle.kts
-      - name: Apply V0.4.2 changes
+      - name: Apply V0.4.3 changes
         run: |
           PROJECT=$(find source -name settings.gradle -o -name settings.gradle.kts | head -1)
           test -n "$PROJECT"
@@ -35,9 +35,10 @@ jobs:
           mkdir -p "$PROJECT_DIR/app/src/main/assets"
           cp v0.4.1/app/src/main/assets/index.html "$PROJECT_DIR/app/src/main/assets/index.html"
           cp v0.4.1/app/build.gradle "$PROJECT_DIR/app/build.gradle"
-          grep -q "0.4.2" "$PROJECT_DIR/app/build.gradle"
+          cp v0.4.1/app/src/main/java/com/futuresai/app/MainActivity.java "$PROJECT_DIR/app/src/main/java/com/futuresai/app/MainActivity.java"
+          grep -q "0.4.3" "$PROJECT_DIR/app/build.gradle"
           grep -q "combined_score" "$PROJECT_DIR/app/src/main/assets/index.html"
-          grep -q "界面版本 V0.4.2" "$PROJECT_DIR/app/src/main/assets/index.html"
+          grep -q "界面版本 V0.4.3" "$PROJECT_DIR/app/src/main/assets/index.html"
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -58,12 +59,12 @@ jobs:
           grep -q 'classes.dex' apk-contents.txt
           grep -q 'assets/index.html' apk-contents.txt
           grep -q 'AndroidManifest.xml' apk-contents.txt
-          unzip -p "$APK" assets/index.html | grep -q '界面版本 V0.4.2'
+          unzip -p "$APK" assets/index.html | grep -q '界面版本 V0.4.3'
           unzip -p "$APK" assets/index.html | grep -q 'AI 中文分析报告'
           echo "APK bytes: $(wc -c < "$APK")"
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: futures-ai-v0.4.2-debug-apk
+          name: futures-ai-v0.4.3-debug-apk
           path: source/**/build/outputs/apk/debug/*.apk
           if-no-files-found: error
