@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>期货智研 AI</title><style>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>期货智研 AI · V0.4.2</title><style>
 :root{font-family:system-ui,sans-serif;color:#e8f1ff;background:#0c1525}*{box-sizing:border-box}body{margin:0;padding:18px 16px 70px;max-width:700px;margin:auto}h1{font-size:23px;margin:10px 0 2px}.sub{font-size:12px;color:#99aac2}.card{background:#19263b;border:1px solid #2a3b55;border-radius:16px;padding:16px;margin:14px 0}label{display:block;color:#a7b9d1;font-size:13px;margin:10px 0 6px}input,select{width:100%;padding:12px;border:1px solid #40516a;border-radius:10px;background:#101c30;color:white;font-size:15px}button{background:#347bde;border:0;border-radius:10px;color:white;font-weight:600;padding:12px 16px;margin-top:12px;width:100%}.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}.metric{background:#102038;padding:12px;border-radius:10px}.metric strong{display:block;font-size:19px;margin-top:6px}pre{white-space:pre-wrap;word-break:break-word;font-size:12px;color:#d3e1f4;line-height:1.65}.warning{color:#e9bf72}.ok{color:#7ee3bc}#result{display:none}small{color:#a5b5ca}canvas{background:#102038;border-radius:10px}details{color:#b6c8df}summary{cursor:pointer;padding:8px 0}nav{position:fixed;bottom:0;left:0;right:0;background:#111e30;border-top:1px solid #2d3c53;padding:12px;text-align:center;color:#a6c7f7}
 </style></head><body>
 <div class="sub">FUTURES INTELLIGENCE · V0.4.1</div><h1>期货智研 AI</h1><div class="sub">中国期货 · 主力候选 · 综合分析</div>
@@ -8,8 +8,10 @@
 <div class="card"><b>60分钟 MA144</b><p class="sub">V0.3 已支持通过CSV研究历史穿越信号。本安卓版本尚未实现实时60分钟行情推送。</p></div>
 <div class="sub">行情可能延迟，分析仅供研究参考，不自动交易；没有经过样本外验证的上涨概率不会展示。</div><nav>行情分析 · 研究工具 · 设置</nav>
 <script>
+const UI_BUILD='0.4.2-20261112';
 const $=id=>document.getElementById(id);
 const DEFAULT_SERVER='http://110.42.130.206';
+document.body.insertAdjacentHTML('afterbegin','<div style="font-size:12px;color:#8ab4f8;text-align:right;padding:3px 0">界面版本 V0.4.2 · 中文报告版</div>');
 $('server').value=localStorage.getItem('futures_server')||DEFAULT_SERVER;
 $('server').addEventListener('change',()=>localStorage.setItem('futures_server',$('server').value.trim()));
 function base(){return $('server').value.trim().replace(/\/+$/,'')}
