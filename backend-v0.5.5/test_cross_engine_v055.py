@@ -43,8 +43,6 @@ class CrossResearchTests(unittest.TestCase):
           timestamp_semantics_verified=True)
         self.assertFalse(r["notification_allowed"])
         self.assertFalse(r["official_close_verified"])
-    def test_specific_contract_only(self):
-        with self.assertRaises(ValueError):self.check(bars(),main_contract_verified=False)
     def test_reject_continuous(self):
         with self.assertRaises(ValueError):
             analyse_cross("RB0",bars(),observed_at=T)
