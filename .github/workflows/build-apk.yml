@@ -6,6 +6,7 @@ on:
       - main
       - v0.5.1
       - v0.5.2
+      - v0.5.3
 
 jobs:
   build:
@@ -29,7 +30,7 @@ jobs:
         run: |
           unzip -o futures_ai_android_v0.4_source.zip -d source
           find source -name settings.gradle -o -name settings.gradle.kts
-      - name: Apply V0.5.2 changes
+      - name: Apply V0.5.3 changes
         run: |
           PROJECT=$(find source -name settings.gradle -o -name settings.gradle.kts | head -1)
           test -n "$PROJECT"
@@ -51,7 +52,7 @@ jobs:
           app.set("{%s}usesCleartextTraffic"%ns,"true")
           tree.write(path,encoding="utf-8",xml_declaration=True)
           PY
-          grep -q "0.5.2" "$PROJECT_DIR/app/build.gradle"
+          grep -q "0.5.3" "$PROJECT_DIR/app/build.gradle"
           grep -q 'addJavascriptInterface(new NetworkBridge(), "FuturesNative")' "$PROJECT_DIR/app/src/main/java/com/futuresai/app/MainActivity.java"
           grep -q '<select id="contract"' "$PROJECT_DIR/app/src/main/assets/index.html"
           grep -q 'inspectMarketData(j,rows)' "$PROJECT_DIR/app/src/main/assets/index.html"
@@ -61,7 +62,7 @@ jobs:
           grep -q 'function flushTable()' "$PROJECT_DIR/app/src/main/assets/index.html"
           grep -q 'renderReport(ai.ai_report)' "$PROJECT_DIR/app/src/main/assets/index.html"
           grep -q "combined_score" "$PROJECT_DIR/app/src/main/assets/index.html"
-          grep -q "界面版本 V0.5.2" "$PROJECT_DIR/app/src/main/assets/index.html"
+          grep -q "界面版本 V0.5.3" "$PROJECT_DIR/app/src/main/assets/index.html"
       - name: Verify DeepSeek integration in source
         run: |
           PROJECT=$(find source -name settings.gradle -o -name settings.gradle.kts | head -1)
@@ -83,6 +84,11 @@ jobs:
           PYTHONPATH=backend-v0.5.0:backend-v0.5.2 python3 -m unittest discover -s backend-v0.5.2 -p 'test_*.py' -v
           grep -q 'async function loadMonitorV052()' v0.4.1/app/src/main/assets/index.html
           grep -q '/monitor/v052' v0.4.1/app/src/main/assets/index.html
+      - name: Test V0.5.3 candidate discovery and close-evidence gate
+        run: |
+          PYTHONPATH=backend-v0.5.0:backend-v0.5.2:backend-v0.5.3 python3 -m unittest discover -s backend-v0.5.3 -p 'test_*.py' -v
+          grep -q 'async function loadV053()' v0.4.1/app/src/main/assets/index.html
+          grep -q '/v053/status' v0.4.1/app/src/main/assets/index.html
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -103,7 +109,7 @@ jobs:
           grep -q 'classes.dex' apk-contents.txt
           grep -q 'assets/index.html' apk-contents.txt
           grep -q 'AndroidManifest.xml' apk-contents.txt
-          unzip -p "$APK" assets/index.html | grep -q '界面版本 V0.5.2'
+          unzip -p "$APK" assets/index.html | grep -q '界面版本 V0.5.3'
           unzip -p "$APK" assets/index.html | grep -Fq 'DeepSeek AI 完整研究报告'
           unzip -p "$APK" assets/index.html | grep -Fq '入场机会研究 · 独立引擎'
           unzip -p "$APK" AndroidManifest.xml >/dev/null
@@ -127,9 +133,18 @@ jobs:
             backend-v0.5.2/install_v052.sh
             V0.5.2_README.md
           if-no-files-found: error
+      - name: Upload V0.5.3 backend test files
+        uses: actions/upload-artifact@v4
+        with:
+          name: futures-ai-v0.5.3-backend-test
+          path: |
+            backend-v0.5.3/*.py
+            backend-v0.5.3/install_v053.sh
+            V0.5.3_README.md
+          if-no-files-found: error
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: futures-ai-v0.5.2-debug-apk
+          name: futures-ai-v0.5.3-debug-apk
           path: source/**/build/outputs/apk/debug/*.apk
           if-no-files-found: error
