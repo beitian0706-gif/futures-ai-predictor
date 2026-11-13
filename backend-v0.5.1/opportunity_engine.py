@@ -104,13 +104,30 @@ def evaluate_opportunity(contract, daily, hourly, *,
 
     direction_matches=(direction=="long" and cross=="up") or (direction=="short" and cross=="down")
     atr=_atr(completed)
+    # B: historical MA144 retest and directional continuation. C: 20-bar
+    # structure break. Unlike the monitoring engine neither requires a new
+    # crossing; all remain research candidates until separately verified.
+    long_side=direction=="long" and last_hour["close"]>h_ma
+    short_side=direction=="short" and last_hour["close"]<h_ma
+    retest_long=(atr is not None and long_side
+                 and any(b["low"] <= h_ma+atr*0.25 for b in completed[-4:-1])
+                 and last_hour["close"]>prev_hour["close"])
+    retest_short=(atr is not None and short_side
+                  and any(b["high"] >= h_ma-atr*0.25 for b in completed[-4:-1])
+                  and last_hour["close"]<prev_hour["close"])
+    lookback=completed[-21:-1]
+    breakout_long=long_side and last_hour["close"]>max(b["high"] for b in lookback)
+    breakout_short=short_side and last_hour["close"]<min(b["low"] for b in lookback)
+    setup=("A-收盘穿越" if direction_matches else
+           "B-回踩确认" if retest_long or retest_short else
+           "C-结构突破" if breakout_long or breakout_short else None)
     notes=[]
     if direction=="mixed":
         notes.append("日线MA20方向与MA60位置不构成一致趋势")
     else:
         notes.append("日线趋势过滤为"+("偏多" if positive else "偏空"))
     if cross=="none":
-        notes.append("最近两根可用60分钟K线未发生MA144穿越")
+        notes.append("最近两根可用60分钟K线未发生MA144穿越（不妨碍其他独立策略研究）")
     else:
         notes.append("最近两根可用历史K线出现"+("上穿" if cross=="up" else "下穿"))
     if not direction_matches and cross!="none":
@@ -127,13 +144,13 @@ def evaluate_opportunity(contract, daily, hourly, *,
     # a moving average or an uncalibrated scenario range.
     notes.append("缺少已验证的结构止损、目标位置和风险收益比")
 
-    good=(direction_matches and distance<=cross_distance_cap_pct and 0<=age<=max_age_hours)
+    good=(setup is not None and distance<=cross_distance_cap_pct and 0<=age<=max_age_hours)
     status="candidate" if good else "watch"
     msg=("存在历史穿越候选；等待实时收盘、主力身份及风险收益核验"
          if good else "条件尚未齐备，继续观察")
     response=_base(code,message=msg,status=status,reasons=notes)
     response.update({
-        "strategy":"A-收盘穿越", "timeframe":"daily + 60m",
+        "strategy":setup or "未触发", "timeframe":"daily + 60m",
         "daily_trend":direction,"historical_cross":cross,
         "ma20":round(d20,4),"ma60":round(d60,4),"ma144":round(h_ma,4),
         "latest_usable_close":last_hour["close"],
@@ -146,7 +163,7 @@ def evaluate_opportunity(contract, daily, hourly, *,
         "entry_conditions_met":False,
         "risk_reward":None,
         "source_realtime_verified":False,
-        "candidate_reason_code":("CROSS_TREND_MATCH" if good else "NO_QUALIFIED_SETUP")
+        "candidate_reason_code":(setup if good else "NO_QUALIFIED_SETUP")
     })
     return response
 
