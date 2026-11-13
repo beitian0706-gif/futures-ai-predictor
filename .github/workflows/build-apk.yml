@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - v0.4.9
 
 jobs:
   build:
@@ -27,7 +28,7 @@ jobs:
         run: |
           unzip -o futures_ai_android_v0.4_source.zip -d source
           find source -name settings.gradle -o -name settings.gradle.kts
-      - name: Apply V0.4.8 changes
+      - name: Apply V0.4.9 changes
         run: |
           PROJECT=$(find source -name settings.gradle -o -name settings.gradle.kts | head -1)
           test -n "$PROJECT"
@@ -49,15 +50,17 @@ jobs:
           app.set("{%s}usesCleartextTraffic"%ns,"true")
           tree.write(path,encoding="utf-8",xml_declaration=True)
           PY
-          grep -q "0.4.8" "$PROJECT_DIR/app/build.gradle"
+          grep -q "0.4.9" "$PROJECT_DIR/app/build.gradle"
           grep -q 'addJavascriptInterface(new NetworkBridge(), "FuturesNative")' "$PROJECT_DIR/app/src/main/java/com/futuresai/app/MainActivity.java"
           grep -q '<select id="contract"' "$PROJECT_DIR/app/src/main/assets/index.html"
           grep -q 'inspectMarketData(j,rows)' "$PROJECT_DIR/app/src/main/assets/index.html"
           grep -q 'computeADX' "$PROJECT_DIR/app/src/main/assets/index.html"
           grep -q 'computeATR' "$PROJECT_DIR/app/src/main/assets/index.html"
+          grep -q 'describeSignal(j,{macd})' "$PROJECT_DIR/app/src/main/assets/index.html"
+          grep -q 'function flushTable()' "$PROJECT_DIR/app/src/main/assets/index.html"
           grep -q 'renderReport(ai.ai_report)' "$PROJECT_DIR/app/src/main/assets/index.html"
           grep -q "combined_score" "$PROJECT_DIR/app/src/main/assets/index.html"
-          grep -q "界面版本 V0.4.8" "$PROJECT_DIR/app/src/main/assets/index.html"
+          grep -q "界面版本 V0.4.9" "$PROJECT_DIR/app/src/main/assets/index.html"
       - name: Verify DeepSeek integration in source
         run: |
           PROJECT=$(find source -name settings.gradle -o -name settings.gradle.kts | head -1)
@@ -84,13 +87,13 @@ jobs:
           grep -q 'classes.dex' apk-contents.txt
           grep -q 'assets/index.html' apk-contents.txt
           grep -q 'AndroidManifest.xml' apk-contents.txt
-          unzip -p "$APK" assets/index.html | grep -q '界面版本 V0.4.8'
+          unzip -p "$APK" assets/index.html | grep -q '界面版本 V0.4.9'
           unzip -p "$APK" assets/index.html | grep -q 'AI 中文分析报告'
           unzip -p "$APK" AndroidManifest.xml >/dev/null
           echo "APK bytes: $(wc -c < "$APK")"
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: futures-ai-v0.4.8-debug-apk
+          name: futures-ai-v0.4.9-debug-apk
           path: source/**/build/outputs/apk/debug/*.apk
           if-no-files-found: error
