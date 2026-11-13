@@ -114,19 +114,15 @@ def main():
     p.add_argument("--output",default="/var/lib/futures-ai/audit-v054.json")
     args=p.parse_args()
     from pathlib import Path
-    from monitor_v052 import connect_db,init_db,fetch_monitor_status
+    from monitor_v052 import read_latest
     try:
         c=json.loads(Path(args.v053).read_text(encoding="utf-8")).get("candidates",[])
     except (FileNotFoundError,ValueError,PermissionError):
         c=[]
     # This audit deliberately does not scrape market feeds, trigger signals,
     # modify monitoring watchlist, or claim an official close.
-    scan=[]
     try:
-        db=connect_db()
-        init_db(db)
-        status=fetch_monitor_status(db)
-        scan=status.get("latest_scans",[])
+        scan=read_latest('/var/lib/futures-ai/monitor-v052.sqlite3').get('latest_scans',[])
     except Exception:
         scan=[]
     result=monitor_audit(data={"main_candidates":c,"latest_scans":scan})
