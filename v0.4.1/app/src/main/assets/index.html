@@ -1,25 +1,56 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>期货智研 AI · V0.4.9</title><style>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>期货智研 AI · V0.5.0</title><style>
 :root{font-family:system-ui,sans-serif;color:#e8f1ff;background:#0c1525}*{box-sizing:border-box}body{margin:0;padding:18px 16px 70px;max-width:700px;margin:auto}h1{font-size:23px;margin:10px 0 2px}.sub{font-size:12px;color:#99aac2}.card{background:#19263b;border:1px solid #2a3b55;border-radius:16px;padding:16px;margin:14px 0}label{display:block;color:#a7b9d1;font-size:13px;margin:10px 0 6px}input,select{width:100%;padding:12px;border:1px solid #40516a;border-radius:10px;background:#101c30;color:white;font-size:15px}button{background:#347bde;border:0;border-radius:10px;color:white;font-weight:600;padding:12px 16px;margin-top:12px;width:100%}.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}.metric{background:#102038;padding:12px;border-radius:10px}.metric strong{display:block;font-size:19px;margin-top:6px}pre{white-space:pre-wrap;word-break:break-word;font-size:12px;color:#d3e1f4;line-height:1.65}.warning{color:#e9bf72}.ok{color:#7ee3bc}#result{display:none}small{color:#a5b5ca}canvas{background:#102038;border-radius:10px}details{color:#b6c8df}summary{cursor:pointer;padding:8px 0} .ai-markdown h1,.ai-markdown h2,.ai-markdown h3{line-height:1.4;margin:18px 0 8px;color:#eaf3ff}.ai-markdown h1{font-size:21px}.ai-markdown h2{font-size:18px}.ai-markdown h3{font-size:16px}.ai-markdown p{margin:8px 0}.ai-markdown blockquote{border-left:3px solid #5c91dc;padding-left:12px;margin:12px 0;color:#b9cde7}.ai-markdown hr{border:0;border-top:1px solid #334761;margin:16px 0}.ai-markdown li{margin:6px 0}.ai-markdown strong{color:#fff}.ai-markdown table{width:100%;border-collapse:collapse;display:block;overflow-x:auto;font-size:12px;margin:12px 0}.ai-markdown th,.ai-markdown td{border:1px solid #40516a;padding:7px 9px;text-align:left;white-space:normal;min-width:65px}.ai-markdown th{background:#253755}.ai-markdown tr:nth-child(even){background:#17283e}.ai-markdown code{font-size:12px;overflow-wrap:anywhere}.ai-markdown ol,.ai-markdown ul{padding-left:21px}nav{position:fixed;bottom:0;left:0;right:0;background:#111e30;border-top:1px solid #2d3c53;padding:12px;text-align:center;color:#a6c7f7}
 </style></head><body>
-<div class="sub">FUTURES INTELLIGENCE · V0.4.9</div><h1>期货智研 AI</h1><div class="sub">中国期货 · 主力候选 · 综合分析</div>
+<div class="sub">FUTURES INTELLIGENCE · V0.5.0</div><h1>期货智研 AI</h1><div class="sub">中国期货 · 主力候选 · 综合分析</div>
 <div class="card"><label>分析服务器地址（已预置，可按需修改）</label><input id="server" placeholder="例如 http://192.168.1.20:8000"/><button onclick="connect()">检测连接</button><div id="connection" class="sub" style="margin-top:8px">尚未连接</div></div>
 <div class="card"><label>品种名称</label><input id="product" value="螺纹钢"/><button onclick="loadContracts()">查询合约与主力候选</button><label>选择具体合约（仅支持非连续合约）</label><select id="contract" disabled><option value="">请先查询品种合约</option></select><div id="contracts" class="sub" style="margin-top:8px"></div><button onclick="analyze()">开始综合分析</button></div>
 <div id="result" class="card"><h3 id="heading">分析结果</h3><div class="row"><div class="metric"><small>综合评分</small><strong id="score">—</strong></div><div class="metric"><small>模型方向</small><strong id="bias">—</strong></div></div><p id="note" class="warning"></p><div id="freshness" class="metric sub" style="line-height:1.9;margin-top:10px">行情时效：待检查</div><div id="quality" class="metric sub" style="line-height:1.9">数据完整度：待分析</div><div id="signal" class="warning" style="margin-top:10px">交易信号：未验证60分钟MA144，不提供入场指令</div><div class="metric" style="margin:10px 0"><small>历史日线价格（非实时）</small><strong id="price">—</strong></div><h3>历史日线走势图</h3><canvas id="chart" style="width:100%;height:210px;display:block" aria-label="历史收盘价和MA20走势图"></canvas><div id="chartNote" class="sub"></div><h3>多指标技术核验</h3><div id="techMetrics" class="row" style="flex-wrap:wrap"></div><div id="techAssessment" class="metric sub" style="line-height:1.85;margin:10px 0"></div><h3>交易研究摘要</h3><div id="alignment" class="metric sub" style="line-height:1.85;margin-bottom:12px">信号一致性：待分析</div><div id="invalidation" class="metric sub" style="line-height:1.85;margin-bottom:12px">判断失效条件：待分析</div><div id="summary" style="line-height:1.8"></div><details id="aiDetails" style="margin-top:14px"><summary style="font-size:18px;font-weight:700">DeepSeek AI 完整研究报告（点击展开）</summary><div id="aiStatus" class="sub">点击“开始综合分析”后获取 AI 研判</div><div id="aiReport" style="overflow-wrap:anywhere;line-height:1.8;margin-top:10px"></div></details><h3>关键技术指标</h3><div id="indicators" class="sub" style="line-height:2"></div><details style="margin-top:14px"><summary>技术详情 · 原始数据</summary><pre id="report"></pre></details></div>
-<div class="card"><b>60分钟 MA144</b><p class="sub">V0.3 已支持通过CSV研究历史穿越信号。本安卓版本尚未实现实时60分钟行情推送。</p></div>
+<div class="card" id="ma144Panel"><h3>60分钟 MA144 · 独立信号研究</h3><p class="sub">只分析上方选中的具体合约。先从服务器读取历史60分钟K线；最后一根因收盘状态不确定被排除。暂不具备实时推送或1分钟内提醒。</p><button onclick="checkMA144()">检查60分钟MA144（历史研究）</button><div id="ma144Status" class="warning" style="margin-top:12px;line-height:1.8">尚未检查；本功能独立于日线评分与DeepSeek报告。</div><div id="ma144Data" class="metric sub" style="line-height:2;margin-top:8px">等待服务器返回已核验格式的历史K线。</div><div class="sub" style="margin-top:8px">提醒状态：未启用后台通知；禁止仅凭本页面生成入场指令。</div></div>
 <div class="sub">行情可能延迟，分析仅供研究参考，不自动交易；没有经过样本外验证的上涨概率不会展示。</div><nav>行情分析 · 研究工具 · 设置</nav>
 <script>
-const UI_BUILD='0.4.9-20261113';
+const UI_BUILD='0.5.0-20261113';
 const $=id=>document.getElementById(id);
 const DEFAULT_SERVER='http://110.42.130.206';
-document.body.insertAdjacentHTML('afterbegin','<div style="font-size:12px;color:#8ab4f8;text-align:right;padding:3px 0">界面版本 V0.4.9 · 中文报告版</div>');
+document.body.insertAdjacentHTML('afterbegin','<div style="font-size:12px;color:#8ab4f8;text-align:right;padding:3px 0">界面版本 V0.5.0 · 中文报告版</div>');
 $('server').value=localStorage.getItem('futures_server')||DEFAULT_SERVER;
 $('server').addEventListener('change',()=>localStorage.setItem('futures_server',$('server').value.trim()));
 function base(){return $('server').value.trim().replace(/\/+$/,'')}
 function msg(id,s){$(id).textContent=s}
 let nextRequestId=0;const pendingRequests=new Map();
 window.__nativeResult=function(id,ok,payload){const item=pendingRequests.get(id);if(!item)return;pendingRequests.delete(id);clearTimeout(item.timer);if(ok){try{item.resolve(JSON.parse(payload))}catch(e){item.reject(Error('服务器返回非JSON内容'))}}else item.reject(Error(payload||'网络请求失败'))};
-async function request(path,opts={},timeoutMs=30000){if(!base())throw Error('请先填写分析服务器地址');if(!window.FuturesNative)throw Error('Android 原生网络模块未加载，请安装 V0.4.9 完整安装包');const id=++nextRequestId;return new Promise((resolve,reject)=>{const timer=setTimeout(()=>{pendingRequests.delete(String(id));reject(Error('请求超时，请检查服务器或行情源'))},timeoutMs);pendingRequests.set(String(id),{resolve,reject,timer});try{window.FuturesNative.request(String(id),base()+path,opts.method||'GET',opts.body||'')}catch(e){clearTimeout(timer);pendingRequests.delete(String(id));reject(e)}})}
+async function request(path,opts={},timeoutMs=30000){if(!base())throw Error('请先填写分析服务器地址');if(!window.FuturesNative)throw Error('Android 原生网络模块未加载，请安装 V0.5.0 完整安装包');const id=++nextRequestId;return new Promise((resolve,reject)=>{const timer=setTimeout(()=>{pendingRequests.delete(String(id));reject(Error('请求超时，请检查服务器或行情源'))},timeoutMs);pendingRequests.set(String(id),{resolve,reject,timer});try{window.FuturesNative.request(String(id),base()+path,opts.method||'GET',opts.body||'')}catch(e){clearTimeout(timer);pendingRequests.delete(String(id));reject(e)}})}
 async function connect(){msg('connection','连接中…');try{let j=await request('/health');msg('connection','连接成功 · 服务版本 '+j.version)}catch(e){msg('connection','连接失败：'+e.message)}}
+async function checkMA144(){
+ const code=$('contract').value.trim().toUpperCase();
+ msg('ma144Data','');
+ if(!isSpecificContract(code)){msg('ma144Status','请先查询品种并在下拉框选择具体合约，不能使用连续合约');return}
+ msg('ma144Status','正在查询'+code+'的历史60分钟K线…');
+ try {
+   const r=await request('/signals/ma144/'+encodeURIComponent(code),{},30000);
+   if(!r||r.contract!==code||r.timeframe!=='60m'||r.source_realtime_verified!==false){
+     msg('ma144Status','返回内容缺少预期数据校验字段，不能认定为有效信号');return
+   }
+   const label=r.status==='insufficient_data'?'数据不足':
+     r.status==='no_data'?'缺少数据':r.status==='invalid_timestamp'?'K线时间异常':
+     r.signal==='up'?'历史上穿MA144':r.signal==='down'?'历史下穿MA144':
+     r.signal==='filtered'?'历史穿越被幅度过滤':'最近两根可用K线未穿越';
+   msg('ma144Status',label+' · '+(r.message||'')+'（仅历史研究）');
+   const lines=['具体合约：'+code,'数据来源：'+(r.source||'未注明'),
+     '来源K线：'+(r.provider_bars??'未知')+' 根；排除最后一根后可用：'+(r.usable_bars??'未知')+' 根'];
+   if(r.ma144!==undefined){
+     lines.push('历史收盘价：'+n(r.last_close)+'；MA144：'+n(r.ma144));
+     lines.push('距离均线：'+n(r.cross_distance_pct,3)+'%；历史K线时间：'+(r.latest_usable_timestamp||'未知'));
+     lines.push('距查询时刻约：'+n(r.latest_age_hours,1)+'小时');
+   }
+   lines.push('数据说明：'+(r.bar_policy||'未提供'));
+   lines.push('服务器查询时间：'+(r.retrieved_at||'未提供'));
+   msg('ma144Data',lines.join('\n'));$('ma144Data').style.whiteSpace='pre-line';
+ }catch(e){
+   let err=String(e.message||e);
+   if(/404|Not Found|未找到/.test(err))err='服务器当前仍为旧版，尚未部署 V0.5.0 的60分钟MA144接口';
+   msg('ma144Status','查询未成功：'+err+'。没有生成MA144穿越信号。');
+ }
+}
 function contractCode(item){if(typeof item==='string')return item.trim().toUpperCase();if(item&&typeof item==='object')return String(item.contract||item.symbol||item.code||item.contract_code||'').trim().toUpperCase();return ''}
 function isSpecificContract(code){return /^[A-Z]{1,3}[0-9]{3,4}$/.test(code)}
 async function loadContracts(){const select=$('contract');select.replaceChildren(new Option('正在查询合约…',''));select.disabled=true;msg('contracts','查询中…');try{const product=$('product').value.trim();if(!product)throw Error('请输入品种名称');const j=await request('/contracts?product='+encodeURIComponent(product));const arr=Array.isArray(j.contracts)?j.contracts:[];const unique=[...new Set(arr.map(contractCode).filter(isSpecificContract))];const candidate=contractCode(j.main_candidate);select.replaceChildren(new Option('请选择具体合约',''));for(const code of unique){const opt=new Option(code+(code===candidate?' · 主力候选':''),code);select.add(opt)}select.disabled=unique.length===0;if(candidate&&unique.includes(candidate))select.value=candidate;msg('contracts',unique.length?'共 '+unique.length+' 个具体合约；'+(unique.includes(candidate)?'已默认选中主力候选 '+candidate+'。':'请选择合约。')+' 主力候选仅供参考，需核验实际主力。':'未取得可选择的具体合约，请检查品种名称或行情源。')}catch(e){select.replaceChildren(new Option('查询失败，请重试',''));msg('contracts','查询失败：'+e.message)}}
