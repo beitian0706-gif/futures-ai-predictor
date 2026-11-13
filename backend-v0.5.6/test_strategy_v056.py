@@ -18,7 +18,8 @@ class StrategyTests(unittest.TestCase):
     def test_nine_comparisons(self):
         s=compare_strategies("RB2701",sample(),Settings(contract_multiplier=10,margin_per_lot=1000))
         self.assertEqual(len(s["comparisons"]),9)
-        self.assertTrue(all(x["research_only"] for x in s["comparisons"]))
+        self.assertTrue(s["research_only"])
+        self.assertTrue(all("train" in x and "test" in x for x in s["comparisons"]))
     def test_A_cross_not_entry_instruction(self):
         b=validate_bars(sample())
         atr,ma=indicators(b)
