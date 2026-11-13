@@ -17,7 +17,7 @@ def make_bars(closes, start=BASE, step=timedelta(hours=1)):
 class OpportunityEngineTests(unittest.TestCase):
     def test_up_cross_candidate_not_alert(self):
         daily=make_bars([80+i for i in range(61)],step=timedelta(days=1))
-        hourly=make_bars([100]*145+[102,103])
+        hourly=make_bars([100]*145+[100.5,100.6])
         r=evaluate_opportunity("RB2701",daily,hourly,
                 now=hourly[-2]["datetime"]+timedelta(hours=2))
         self.assertEqual(r["status"],"candidate")
@@ -27,14 +27,14 @@ class OpportunityEngineTests(unittest.TestCase):
         self.assertFalse(r["entry_conditions_met"])
     def test_down_cross_candidate(self):
         daily=make_bars([140-i for i in range(61)],step=timedelta(days=1))
-        hourly=make_bars([100]*145+[99,98])
+        hourly=make_bars([100]*145+[99.5,99.4])
         r=evaluate_opportunity("JM2701",daily,hourly,
                 now=hourly[-2]["datetime"]+timedelta(hours=2))
         self.assertEqual(r["status"],"candidate")
         self.assertEqual(r["historical_cross"],"down")
     def test_conflict_stays_watch(self):
         daily=make_bars([140-i for i in range(61)],step=timedelta(days=1))
-        hourly=make_bars([100]*145+[102,103])
+        hourly=make_bars([100]*145+[100.5,100.6])
         r=evaluate_opportunity("RB2701",daily,hourly,
                 now=hourly[-2]["datetime"]+timedelta(hours=2))
         self.assertEqual(r["status"],"watch")
@@ -47,7 +47,7 @@ class OpportunityEngineTests(unittest.TestCase):
         self.assertEqual(r["usable_hourly_bars"],146)
     def test_stale_blocks_candidate(self):
         daily=make_bars([80+i for i in range(61)],step=timedelta(days=1))
-        hourly=make_bars([100]*145+[102,103])
+        hourly=make_bars([100]*145+[100.5,100.6])
         r=evaluate_opportunity("RB2701",daily,hourly,
                 now=hourly[-2]["datetime"]+timedelta(days=5))
         self.assertEqual(r["status"],"watch")
@@ -59,13 +59,13 @@ class OpportunityEngineTests(unittest.TestCase):
             evaluate_opportunity("RB0",[],[])
     def test_invalid_bar(self):
         daily=make_bars([80+i for i in range(61)],step=timedelta(days=1))
-        hourly=make_bars([100]*145+[102,103])
+        hourly=make_bars([100]*145+[100.5,100.6])
         hourly[-5]["high"]=0
         with self.assertRaises(Market60mError):
             evaluate_opportunity("RB2701",daily,hourly)
     def test_not_ready_even_if_flags_true(self):
         daily=make_bars([80+i for i in range(61)],step=timedelta(days=1))
-        hourly=make_bars([100]*145+[102,103])
+        hourly=make_bars([100]*145+[100.5,100.6])
         r=evaluate_opportunity("RB2701",daily,hourly,
                 now=hourly[-2]["datetime"]+timedelta(hours=2),
                 main_contract_verified=True, closed_bar_verified=True,
