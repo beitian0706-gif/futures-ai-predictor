@@ -111,7 +111,7 @@ def classify(b,atr,ma,i):
 def compatible(side,trend):
     return trend == ("up" if side=="long" else "down")
 
-def run_research(contract,raw,settings=None,*,entry_type="B",exit_style="partial_trail"):
+def run_research(contract,raw,settings=None,*,entry_type="B",exit_style="partial_trail",start_signal_index=154):
     """One contract; one method. No retrospective continuous main stitching."""
     if not isinstance(contract,str) or not SYMBOL.fullmatch(contract.upper()):
         raise ValueError("concrete futures contract required")
@@ -193,7 +193,7 @@ def run_research(contract,raw,settings=None,*,entry_type="B",exit_style="partial
             if pos["remaining"]==0:
                 pos["r_net"]=pos["pnl"]/(pos["lots"]*pos["risk_per_lot"])
                 trades.append(pos);position=None
-        if position is None and pending is None and i<len(b)-1:
+        if position is None and pending is None and i<len(b)-1 and i>=start_signal_index:
             signal=classify(b,atr,ma,i)
             if signal and signal[0]==entry_type:
                 typ,side=signal
@@ -230,9 +230,20 @@ def run_research(contract,raw,settings=None,*,entry_type="B",exit_style="partial
         "尚未接入实盘行情、权威收盘确认或可靠手机通知"]}
 
 def compare_strategies(contract,bars,p=None):
+    """Time ordered 70/30, test indicators warmed by training bars."""
+    validate_bars(bars)
+    cut=max(170,int(len(bars)*0.7))
+    if len(bars)-cut<25:raise ValueError("insufficient holdout")
+    items=[]
+    for a in ("A","B","C"):
+        for e in ("fixed_2r","partial_trail","full_trail"):
+            train=run_research(contract,bars[:cut],p,entry_type=a,exit_style=e)
+            test=run_research(contract,bars,p,entry_type=a,exit_style=e,start_signal_index=cut)
+            cols=("trades","net_pnl","win_rate","avg_r","profit_factor","max_realized_drawdown_pct")
+            items.append({"entry_type":a,"exit_style":e,
+                          "train":{k:train[k] for k in cols},
+                          "test":{k:test[k] for k in cols},
+                          "test_open_position":test["open_position"]})
     return {"version":"0.5.6","contract":contract.upper(),"research_only":True,
-      "comparisons":[{k:v for k,v in run_research(contract,bars,p,entry_type=a,exit_style=e).items()
-                      if k not in ("trade_log","limitations")}
-                    for a in ("A","B","C")
-                    for e in ("fixed_2r","partial_trail","full_trail")],
-      "warning":"九组原型参数同历史样本的比较，可能过拟合；需要滚动样本外验证。"}
+      "train_bars":cut,"test_bars":len(bars)-cut,"comparisons":items,
+      "warning":"时间顺序训练/测试切分；测试使用历史K线预热指标但训练区间不交易。仅一次划分，不能代替滚动样本外或实盘验证。"}
