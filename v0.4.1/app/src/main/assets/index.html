@@ -1,7 +1,7 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>期货智研 AI · V0.5.5</title><style>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>期货智研 AI · V0.5.6</title><style>
 :root{font-family:system-ui,sans-serif;color:#e8f1ff;background:#0c1525}*{box-sizing:border-box}body{margin:0;padding:18px 16px 70px;max-width:700px;margin:auto}h1{font-size:23px;margin:10px 0 2px}.sub{font-size:12px;color:#99aac2}.card{background:#19263b;border:1px solid #2a3b55;border-radius:16px;padding:16px;margin:14px 0}label{display:block;color:#a7b9d1;font-size:13px;margin:10px 0 6px}input,select{width:100%;padding:12px;border:1px solid #40516a;border-radius:10px;background:#101c30;color:white;font-size:15px}button{background:#347bde;border:0;border-radius:10px;color:white;font-weight:600;padding:12px 16px;margin-top:12px;width:100%}.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}.metric{background:#102038;padding:12px;border-radius:10px}.metric strong{display:block;font-size:19px;margin-top:6px}pre{white-space:pre-wrap;word-break:break-word;font-size:12px;color:#d3e1f4;line-height:1.65}.warning{color:#e9bf72}.ok{color:#7ee3bc}#result{display:none}small{color:#a5b5ca}canvas{background:#102038;border-radius:10px}details{color:#b6c8df}summary{cursor:pointer;padding:8px 0} .ai-markdown h1,.ai-markdown h2,.ai-markdown h3{line-height:1.4;margin:18px 0 8px;color:#eaf3ff}.ai-markdown h1{font-size:21px}.ai-markdown h2{font-size:18px}.ai-markdown h3{font-size:16px}.ai-markdown p{margin:8px 0}.ai-markdown blockquote{border-left:3px solid #5c91dc;padding-left:12px;margin:12px 0;color:#b9cde7}.ai-markdown hr{border:0;border-top:1px solid #334761;margin:16px 0}.ai-markdown li{margin:6px 0}.ai-markdown strong{color:#fff}.ai-markdown table{width:100%;border-collapse:collapse;display:block;overflow-x:auto;font-size:12px;margin:12px 0}.ai-markdown th,.ai-markdown td{border:1px solid #40516a;padding:7px 9px;text-align:left;white-space:normal;min-width:65px}.ai-markdown th{background:#253755}.ai-markdown tr:nth-child(even){background:#17283e}.ai-markdown code{font-size:12px;overflow-wrap:anywhere}.ai-markdown ol,.ai-markdown ul{padding-left:21px}nav{position:fixed;bottom:0;left:0;right:0;background:#111e30;border-top:1px solid #2d3c53;padding:12px;text-align:center;color:#a6c7f7}
 </style></head><body>
-<div class="sub">FUTURES INTELLIGENCE · V0.5.5</div><h1>期货智研 AI</h1><div class="sub">中国期货 · 主力候选 · 综合分析</div>
+<div class="sub">FUTURES INTELLIGENCE · V0.5.6</div><h1>期货智研 AI</h1><div class="sub">中国期货 · 主力候选 · 综合分析</div>
 <div class="card"><label>分析服务器地址（已预置，可按需修改）</label><input id="server" placeholder="例如 http://192.168.1.20:8000"/><button onclick="connect()">检测连接</button><div id="connection" class="sub" style="margin-top:8px">尚未连接</div></div>
 <div class="card"><label>品种名称</label><input id="product" value="螺纹钢"/><button onclick="loadContracts()">查询合约与主力候选</button><label>选择具体合约（仅支持非连续合约）</label><select id="contract" disabled><option value="">请先查询品种合约</option></select><div id="contracts" class="sub" style="margin-top:8px"></div><button onclick="analyze()">开始综合分析</button></div>
 <div class="card" id="ma144Panel"><h3>60分钟 MA144 · 独立信号研究</h3><p class="sub">只分析上方选中的具体合约。先从服务器读取历史60分钟K线；最后一根因收盘状态不确定被排除。暂不具备实时推送或1分钟内提醒。</p><button onclick="checkMA144()">检查60分钟MA144（历史研究）</button><div id="ma144Status" class="warning" style="margin-top:12px;line-height:1.8">尚未检查；本功能独立于日线评分与DeepSeek报告。</div><div id="ma144Data" class="metric sub" style="line-height:2;margin-top:8px">等待服务器返回已核验格式的历史K线。</div><div class="sub" style="margin-top:8px">提醒状态：未启用后台通知；禁止仅凭本页面生成入场指令。</div></div>
@@ -35,13 +35,29 @@
 <div id="v055Status" class="warning" style="margin-top:10px">尚未检查V0.5.5后端</div>
 <div id="v055Details" class="metric sub" style="white-space:pre-line;line-height:1.8;margin-top:10px">等待研究记录</div>
 </div>
+<div class="card" id="strategyV056Panel">
+<h3>入场与出场策略实验室 · V0.5.6</h3>
+<p class="sub">MA144穿越是独立监测；A首次穿越、B回踩确认、C趋势突破是三种独立入场研究。止损及退出对比采用历史60分钟K线，不能据此自动下单。</p>
+<div class="metric sub" style="line-height:1.9">
+<strong>A 穿越：</strong>首次收盘穿越MA144，只作为机会研究候选。<br>
+<strong>B 回踩：</strong>穿越后回踩MA144附近，随后向突破方向确认。<br>
+<strong>C 突破：</strong>历史10根K线高低点突破，参考MA144斜率。<br>
+<strong>退出：</strong>ATR初始止损、2R固定止盈、2R部分减仓+ATR移动止损、全仓ATR移动止损。<br>
+<strong>资金：</strong>默认研究本金10万元，单笔风险预算0.5%，仓位按合约乘数、止损距离及保证金约束计算。<br>
+<strong>回测：</strong>先后按时间70%训练/30%样本外比较，手续费和滑点须提供真实合约参数。
+</div>
+<button onclick="loadV056()">查看A/B/C及退出策略回测结果</button>
+<div id="v056Status" class="warning" style="margin-top:10px">尚未读取V0.5.6策略回测报告</div>
+<div id="v056Details" class="metric sub" style="white-space:pre-line;line-height:1.9;margin-top:10px">需要上传符合要求的历史60分钟OHLC数据，后端运行回测后才会显示真实统计，不填造胜率。</div>
+<div class="warning" style="margin-top:10px">实盘提醒未启用。策略原型参数不代表盈利能力；风险预算不等于实际最大损失。</div>
+</div>
 <div id="result" class="card"><h3 id="heading">分析结果</h3><div class="row"><div class="metric"><small>综合评分</small><strong id="score">—</strong></div><div class="metric"><small>模型方向</small><strong id="bias">—</strong></div></div><p id="note" class="warning"></p><div id="freshness" class="metric sub" style="line-height:1.9;margin-top:10px">行情时效：待检查</div><div id="quality" class="metric sub" style="line-height:1.9">数据完整度：待分析</div><div id="signal" class="warning" style="margin-top:10px">交易信号：未验证60分钟MA144，不提供入场指令</div><div class="metric" style="margin:10px 0"><small>历史日线价格（非实时）</small><strong id="price">—</strong></div><h3>历史日线走势图</h3><canvas id="chart" style="width:100%;height:210px;display:block" aria-label="历史收盘价和MA20走势图"></canvas><div id="chartNote" class="sub"></div><h3>多指标技术核验</h3><div id="techMetrics" class="row" style="flex-wrap:wrap"></div><div id="techAssessment" class="metric sub" style="line-height:1.85;margin:10px 0"></div><h3>交易研究摘要</h3><div id="alignment" class="metric sub" style="line-height:1.85;margin-bottom:12px">信号一致性：待分析</div><div id="invalidation" class="metric sub" style="line-height:1.85;margin-bottom:12px">判断失效条件：待分析</div><div id="summary" style="line-height:1.8"></div><details id="aiDetails" style="margin-top:14px"><summary style="font-size:18px;font-weight:700">DeepSeek AI 完整研究报告（点击展开）</summary><div id="aiStatus" class="sub">点击“开始综合分析”后获取 AI 研判</div><div id="aiReport" style="overflow-wrap:anywhere;line-height:1.8;margin-top:10px"></div></details><h3>关键技术指标</h3><div id="indicators" class="sub" style="line-height:2"></div><details style="margin-top:14px"><summary>技术详情 · 原始数据</summary><pre id="report"></pre></details></div>
 <div class="sub">行情可能延迟，分析仅供研究参考，不自动交易；没有经过样本外验证的上涨概率不会展示。</div><nav>行情分析 · 研究工具 · 设置</nav>
 <script>
 const UI_BUILD='0.5.1-20261113';
 const $=id=>document.getElementById(id);
 const DEFAULT_SERVER='http://110.42.130.206';
-document.body.insertAdjacentHTML('afterbegin','<div style="font-size:12px;color:#8ab4f8;text-align:right;padding:3px 0">界面版本 V0.5.5 · 中文报告版</div>');
+document.body.insertAdjacentHTML('afterbegin','<div style="font-size:12px;color:#8ab4f8;text-align:right;padding:3px 0">界面版本 V0.5.6 · 中文报告版</div>');
 $('server').value=localStorage.getItem('futures_server')||DEFAULT_SERVER;
 $('server').addEventListener('change',()=>localStorage.setItem('futures_server',$('server').value.trim()));
 function base(){return $('server').value.trim().replace(/\/+$/,'')}
@@ -81,6 +97,42 @@ async function checkMA144(){
    msg('ma144Status','查询未成功：'+err+'。没有生成MA144穿越信号。');
  }
 }
+async function loadV056(){
+ msg('v056Status','正在读取V0.5.6样本外研究结果…');msg('v056Details','');
+ try{
+  const r=await request('/v056/strategy',{},15000);
+  if(!r || r.version!=='0.5.6'||r.research_only!==true||
+     r.push_enabled!==false||r.order_enabled!==false){
+    msg('v056Status','后端研究接口或安全标记不匹配');return;
+  }
+  if(!r.ready||!Array.isArray(r.comparisons)){
+    msg('v056Status','尚无已导入的历史K线回测结果');
+    msg('v056Details','A/B/C与三种退出规则已设计，但本服务器尚无符合条件的真实历史CSV回测样本。不能推断胜率、收益或入场信号。');
+    return;
+  }
+  const p=r.parameters||{};
+  const line=['回测具体合约：'+(r.contract||'未提供'),
+    '训练区间：'+r.train_bars+'根；样本外：'+r.test_bars+'根',
+    '研究本金：'+(p.initial_equity??'未提供')+'元；单笔计划风险：'+(p.risk_percent??'未提供')+'%',
+    '固定参数：止损'+(p.atr_stop_multiple??'?')+' ATR，趋势止损'+(p.trail_atr_multiple??'?')+' ATR，阶段性止盈'+(p.reward_multiple??2)+'R',
+    '（样本外均为同一历史时序切分，尚未滚动验证）'];
+  r.comparisons.forEach(z=>{
+    const t=z.test||{};
+    const num=v=>v===null||v===undefined?'无足够交易':String(v);
+    line.push(z.entry_type+' / '+z.exit_style+'：样本外交易'+num(t.trades)+
+      '笔，胜率'+(t.win_rate===null||t.win_rate===undefined?'不可算':(100*t.win_rate).toFixed(1)+'%')+
+      '，平均R '+num(t.avg_r)+'，净盈亏¥'+num(t.net_pnl)+
+      '，已实现回撤'+num(t.max_realized_drawdown_pct)+'%');
+  });
+  line.push('限制：未核实主力换月、交易时段、正式收盘及实盘交易成本。浮动回撤未计。');
+  msg('v056Details',line.join('\n'));
+  msg('v056Status','研究回测已读取（历史假设，不是实盘机会指令）');
+ }catch(e){
+  msg('v056Status','V0.5.6后端未部署或无法访问');
+  msg('v056Details',String(e.message||e));
+ }
+}
+
 async function loadV055(){
  msg('v055Status','正在读取独立MA144研究事件…');msg('v055Details','');
  try{
