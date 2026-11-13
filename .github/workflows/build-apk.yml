@@ -103,6 +103,16 @@ jobs:
           unzip -p "$APK" assets/index.html | grep -Fq '入场机会研究 · 独立引擎'
           unzip -p "$APK" AndroidManifest.xml >/dev/null
           echo "APK bytes: $(wc -c < "$APK")"
+      - name: Upload optional backend testing files
+        uses: actions/upload-artifact@v4
+        with:
+          name: futures-ai-v0.5.1-backend-test
+          path: |
+            backend-v0.5.1/install_v051.sh
+            backend-v0.5.1/opportunity_engine.py
+            backend-v0.5.1/test_opportunity_engine.py
+            V0.5.1_README.md
+          if-no-files-found: error
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
