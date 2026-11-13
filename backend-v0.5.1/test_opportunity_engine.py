@@ -63,6 +63,25 @@ class OpportunityEngineTests(unittest.TestCase):
         hourly[-5]["high"]=0
         with self.assertRaises(Market60mError):
             evaluate_opportunity("RB2701",daily,hourly)
+    def test_pullback_strategy_independent_of_cross(self):
+        daily=make_bars([80+i for i in range(61)],step=timedelta(days=1))
+        hourly=make_bars([100]*144+[100.1,100.2,100.3])
+        r=evaluate_opportunity("RB2701",daily,hourly,
+                now=hourly[-2]["datetime"]+timedelta(hours=2))
+        self.assertEqual(r["historical_cross"],"none")
+        self.assertEqual(r["strategy"],"B-回踩确认")
+        self.assertEqual(r["status"],"candidate")
+    def test_structure_breakout_not_necessarily_cross(self):
+        daily=make_bars([80+i for i in range(61)],step=timedelta(days=1))
+        hourly=make_bars([100]*125+[100.2]*19+[100.3,100.6,100.7])
+        for b in hourly:
+            b["high"]=b["close"]+0.01
+            b["low"]=b["close"]-0.01
+        r=evaluate_opportunity("RB2701",daily,hourly,
+                now=hourly[-2]["datetime"]+timedelta(hours=2))
+        self.assertEqual(r["historical_cross"],"none")
+        self.assertEqual(r["strategy"],"C-结构突破")
+        self.assertEqual(r["status"],"candidate")
     def test_not_ready_even_if_flags_true(self):
         daily=make_bars([80+i for i in range(61)],step=timedelta(days=1))
         hourly=make_bars([100]*145+[100.5,100.6])
