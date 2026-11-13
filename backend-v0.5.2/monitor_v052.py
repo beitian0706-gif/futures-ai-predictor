@@ -37,7 +37,7 @@ def validate_watchlist(value):
         raise ValueError("监测列表应为不超过100个具体合约的数组")
     normalized=[]
     for item in value:
-        if not isinstance(item, str) or not is_contract(item):
+        if not isinstance(item, str) or not is_contract(item) or item.strip().upper().endswith(("888","999","000")):
             raise ValueError("监测列表只接受具体期货合约")
         code=item.strip().upper()
         if code not in normalized:
