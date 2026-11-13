@@ -51,7 +51,7 @@ jobs:
           app.set("{%s}usesCleartextTraffic"%ns,"true")
           tree.write(path,encoding="utf-8",xml_declaration=True)
           PY
-          grep -q "0.5.1" "$PROJECT_DIR/app/build.gradle"
+          grep -q "0.5.2" "$PROJECT_DIR/app/build.gradle"
           grep -q 'addJavascriptInterface(new NetworkBridge(), "FuturesNative")' "$PROJECT_DIR/app/src/main/java/com/futuresai/app/MainActivity.java"
           grep -q '<select id="contract"' "$PROJECT_DIR/app/src/main/assets/index.html"
           grep -q 'inspectMarketData(j,rows)' "$PROJECT_DIR/app/src/main/assets/index.html"
