@@ -150,8 +150,15 @@ def run_research(contract,raw,settings=None,*,entry_type="B",exit_style="partial
             typ,side,decision_i=pending
             # Fill NEXT bar open; no peeking at this bar to size trade.
             entry=fill_price(x["open"],side,True)
-            stop_gap=max(p.atr_stop_multiple*atr[decision_i],
-                         abs(b[decision_i]["close"]-ma[decision_i]))
+            # Structure stop: most recent five completed 60m bars + ATR buffer.
+            # No highs/lows of the execution bar are used to decide the stop.
+            past=b[max(0,decision_i-4):decision_i+1]
+            pivot=(min(y["low"] for y in past) if side=="long"
+                   else max(y["high"] for y in past))
+            buffered=(pivot-.25*atr[decision_i] if side=="long"
+                      else pivot+.25*atr[decision_i])
+            structural_gap=(entry-buffered if side=="long" else buffered-entry)
+            stop_gap=max(p.atr_stop_multiple*atr[decision_i],structural_gap)
             # Stop distance measured from actual (slipped) fill.
             risk_per_lot=stop_gap*point+2*p.fee_per_lot_side+2*p.slippage_ticks_side*p.tick_size*point
             lots=min(p.max_lots,floor((equity*p.risk_percent/100)/risk_per_lot))
