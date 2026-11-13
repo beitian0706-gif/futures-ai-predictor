@@ -2,6 +2,6 @@ plugins { id 'com.android.application' }
 android {
     namespace 'com.futuresai.app'
     compileSdk 35
-    defaultConfig { applicationId 'com.futuresai.app'; minSdk 26; targetSdk 35; versionCode 19; versionName '0.5.5' }
+    defaultConfig { applicationId 'com.futuresai.app'; minSdk 26; targetSdk 35; versionCode 20; versionName '0.5.6' }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }
